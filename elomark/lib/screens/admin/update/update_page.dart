@@ -1,7 +1,12 @@
+import 'dart:io';
+
+import 'package:csv/csv.dart';
 import 'package:elomark/label_text.dart';
 import 'package:elomark/screens/placeholder.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class UpdatePage extends StatelessWidget {
   final String stdName;
@@ -86,11 +91,8 @@ class UpdatePage extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () {
-                      // Export logic here
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('CSV exported')),
-                      );
+                    onPressed: () async {
+                      await exportCSV(context);
                     },
                     icon: Icon(Icons.share),
                     label: Text('Export as CSV'),
@@ -114,6 +116,29 @@ class UpdatePage extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
+  Future<void> exportCSV(BuildContext context) async {
+    try {
+      // Sample CSV data
+      List<List<String>> csvData = [
+        ['Student Name', 'Course Code', 'Mark'],
+        [stdName, category, mark],
+      ];
+
+      String csv = const ListToCsvConverter().convert(csvData);
+
+      final directory = await getApplicationDocumentsDirectory();
+      final path = "${directory.path}/student_mark.csv";
+      final file = File(path);
+
+      await file.writeAsString(csv);
+
+      // Share the CSV file
+      await Share.shareXFiles([XFile(path)], text: 'Student Mark CSV Export');
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error exporting CSV: $e')));
+    }
+  }
 }
-
-
