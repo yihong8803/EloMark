@@ -1,41 +1,28 @@
+import 'package:elomark/models/mark.dart';
 import 'package:elomark/screens/admin/update/update_page.dart';
 import 'package:flutter/material.dart';
 import 'package:elomark/color.dart';
 
-class RankingList extends StatefulWidget {
-  final String index;
-  final String stdName;
-  final String mark;
-  final String category;
+class MarkList extends StatelessWidget {
+  final Mark markData;
+  final VoidCallback onRefresh;
 
-  const RankingList({
-    super.key,
-    required this.stdName,
-    required this.mark,
-    required this.index,
-    required this.category,
-  });
+  const MarkList({super.key, required this.markData, required this.onRefresh});
 
-  @override
-  State<RankingList> createState() => _RankingListState();
-}
-
-class _RankingListState extends State<RankingList> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (context) => UpdatePage(
-                  stdName: widget.stdName,
-                  mark: widget.mark,
-                  category: widget.category,
-                ),
+            builder: (context) => UpdatePage(markData: markData),
           ),
         );
+
+        if (result == 'refresh') {
+          onRefresh(); // ✅ Call refresh if needed
+        }
       },
       child: Row(
         children: [
@@ -46,28 +33,16 @@ class _RankingListState extends State<RankingList> {
             height: 60,
             width: MediaQuery.of(context).size.width * 0.7,
             decoration: BoxDecoration(
-              color:
-                  widget.index == '1'
-                      ? Colors.yellow
-                      : widget.index == '2'
-                      ? const Color.fromARGB(255, 246, 235, 235)
-                      : widget.index == '3'
-                      ? Colors.orange
-                      : widget.category == 'point'
-                      ? point_color
-                      : widget.category == 'weight'
-                      ? weight_color
-                      : frequency_color,
+              color: point_color,
               borderRadius: BorderRadius.circular(15),
             ),
             child: Row(
               children: [
-                Text(widget.index, style: TextName),
                 Container(
                   margin: const EdgeInsets.only(left: 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(70),
-                    image: DecorationImage(
+                    image: const DecorationImage(
                       image: AssetImage("assets/images/ava.jpg"),
                       fit: BoxFit.cover,
                     ),
@@ -78,15 +53,13 @@ class _RankingListState extends State<RankingList> {
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.only(left: 20),
-                    child: Center(
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          widget.stdName,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                          ),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        markData.student.studentName,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                     ),
@@ -102,29 +75,15 @@ class _RankingListState extends State<RankingList> {
             height: 60,
             width: MediaQuery.of(context).size.width * 0.23,
             decoration: BoxDecoration(
-              color:
-                  widget.index == '1'
-                      ? Colors.yellow
-                      : widget.index == '2'
-                      ? const Color.fromARGB(255, 246, 235, 235)
-                      : widget.index == '3'
-                      ? Colors.orange
-                      : widget.category == 'point'
-                      ? point_color
-                      : widget.category == 'weight'
-                      ? weight_color
-                      : frequency_color,
+              color: point_color,
               borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  '${widget.mark}',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                  ),
+              child: Text(
+                markData.mark.toString(),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.normal,
                 ),
               ),
             ),

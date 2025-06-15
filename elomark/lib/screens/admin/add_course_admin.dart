@@ -28,7 +28,7 @@ class _AddCoursePageState extends State<AddCoursePage> {
 
       if (response.error == null && response.data != null) {
         final Course course = response.data!;
-        Navigator.pop(context, course); // ✅ return full Course object
+        Navigator.pop(context, true); 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(response.error ?? 'Failed to add course')),

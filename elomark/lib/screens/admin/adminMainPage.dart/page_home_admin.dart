@@ -1,43 +1,45 @@
+import 'dart:io';
+import 'package:csv/csv.dart';
 import 'package:elomark/color.dart';
 import 'package:elomark/models/course.dart';
+import 'package:elomark/models/mark.dart';
 import 'package:elomark/screens/admin/add_student_admin.dart';
-import 'package:elomark/screens/admin/adminMainPage.dart/cubit_home_admin.dart';
 import 'package:elomark/screens/admin/adminMainPage.dart/row_home_admin.dart';
+import 'package:elomark/screens/admin/cubits/cubit_mark_admin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
-class Ranking extends StatefulWidget {
+class MarkPage extends StatefulWidget {
   final Course course;
 
-  const Ranking({super.key, required this.course});
+  const MarkPage({super.key, required this.course});
 
   @override
-  State<Ranking> createState() => _RankingState();
+  State<MarkPage> createState() => _MarkPageState();
 }
 
-class _RankingState extends State<Ranking> with SingleTickerProviderStateMixin {
-  late RankingCubit rankingCubit;
-  late TabController _tabController;
-  final List<String> categories = ['point', 'weight', 'frequency'];
+class _MarkPageState extends State<MarkPage> {
+  late MarkCubit markCubit;
 
   @override
   void initState() {
     super.initState();
-    rankingCubit = RankingCubit();
-    _tabController = TabController(length: categories.length, vsync: this);
+    markCubit = MarkCubit();
+    markCubit.loadMarksByCourse(widget.course.courseId);
   }
 
   @override
   void dispose() {
-    rankingCubit.close();
-    _tabController.dispose();
+    markCubit.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-      value: rankingCubit,
+      value: markCubit,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
@@ -47,22 +49,20 @@ class _RankingState extends State<Ranking> with SingleTickerProviderStateMixin {
             '${widget.course.courseCode} - ${widget.course.courseName}',
             style: const TextStyle(fontSize: 18),
           ),
-          bottom: TabBar(
-            controller: _tabController,
-            labelColor: Colors.blue,
-            unselectedLabelColor: Colors.grey,
-            tabs: categories.map((c) => Tab(text: c.toUpperCase())).toList(),
-          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => AddStudent(course: widget.course),
                   ),
                 );
+
+                if (result == 'refresh') {
+                  markCubit.loadMarksByCourse(widget.course.courseId);
+                }
               },
             ),
           ],
@@ -76,39 +76,86 @@ class _RankingState extends State<Ranking> with SingleTickerProviderStateMixin {
             color: Colors.white,
             borderRadius: BorderRadius.circular(15),
           ),
-          child:
-              BlocBuilder<RankingCubit, Map<String, List<Map<String, String>>>>(
-                builder: (context, rankingData) {
-                  return TabBarView(
-                    controller: _tabController,
-                    children:
-                        categories.map((category) {
-                          final filteredList = rankingData[category] ?? [];
+          child: Column(
+            children: [
+              // Export CSV Button
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final marks = markCubit.state;
 
-                          if (filteredList.isEmpty) {
-                            return const Center(
-                              child: Text("No data available"),
-                            );
-                          }
+                    if (marks.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No marks to export')),
+                      );
+                      return;
+                    }
 
-                          return ListView.builder(
-                            itemCount: filteredList.length,
-                            itemBuilder: (context, index) {
-                              final student = filteredList[index];
-                              return RankingList(
-                                category: category,
-                                index: (index + 1).toString(),
-                                stdName: student['stdName'] ?? '',
-                                mark: student['mark'] ?? '',
-                              );
-                            },
-                          );
-                        }).toList(),
-                  );
-                },
+                    List<List<String>> csvData = [
+                      ['Student Name', 'Course Name', 'Mark'],
+                      ...marks.map(
+                        (mark) => [
+                          mark.student.studentName,
+                          mark.course.courseName,
+                          mark.mark.toString(),
+                        ],
+                      ),
+                    ];
+
+                    await exportCSV(context, csvData);
+                  },
+                  icon: const Icon(Icons.share),
+                  label: const Text('Export All as CSV'),
+                ),
               ),
+
+              // List of marks
+              Expanded(
+                child: BlocBuilder<MarkCubit, List<Mark>>(
+                  builder: (context, marks) {
+                    if (marks.isEmpty) {
+                      return const Center(child: Text("No students available"));
+                    }
+
+                    return ListView.builder(
+                      itemCount: marks.length,
+                      itemBuilder: (context, index) {
+                        final mark = marks[index];
+                        return MarkList(
+                          markData: mark,
+                          onRefresh: () {
+                            markCubit.loadMarksByCourse(widget.course.courseId);
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> exportCSV(
+    BuildContext context,
+    List<List<String>> csvData,
+  ) async {
+    try {
+      final csv = const ListToCsvConverter().convert(csvData);
+      final directory = await getApplicationDocumentsDirectory();
+      final path = "${directory.path}/course_marks.csv";
+      final file = File(path);
+
+      await file.writeAsString(csv);
+      await Share.shareXFiles([XFile(path)], text: 'Course Mark CSV Export');
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error exporting CSV: $e')));
+    }
   }
 }

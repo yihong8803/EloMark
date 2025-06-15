@@ -11,7 +11,7 @@ const String logoutURL = '$baseURL/logout';
 
 const String studentURL = '$baseURL/students';
 const String courseURL = '$baseURL/courses';
-const String examMarkURL = '$baseURL/exam-marks';
+const String examMarkURL = '$baseURL/exam_marks';
 
 // =====================
 // ERROR MESSAGES

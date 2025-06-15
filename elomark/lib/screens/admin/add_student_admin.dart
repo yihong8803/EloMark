@@ -1,14 +1,78 @@
+import 'dart:convert';
+import 'package:elomark/constant.dart';
 import 'package:elomark/models/course.dart';
 import 'package:elomark/label_text.dart';
 import 'package:elomark/screens/admin/search_student.dart';
 import 'package:elomark/screens/placeholder.dart';
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:http/http.dart' as http;
 
-class AddStudent extends StatelessWidget {
+class AddStudent extends StatefulWidget {
   final Course course;
 
   const AddStudent({super.key, required this.course});
+
+  @override
+  State<AddStudent> createState() => _AddStudentState();
+}
+
+class _AddStudentState extends State<AddStudent> {
+  String? selectedStudentName;
+  int? selectedStudentId;
+  final TextEditingController markController = TextEditingController();
+
+  Future<void> submitMark() async {
+    final mark = int.tryParse(markController.text);
+
+    if (selectedStudentId == null || mark == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a student and enter a valid mark'),
+        ),
+      );
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse(examMarkURL),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'student_id': selectedStudentId,
+        'course_id': widget.course.courseId,
+        'mark': mark,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Mark added successfully')));
+      Navigator.pop(context, 'refresh');
+    } else {
+      print('Failed to add mark: ${response.body}');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to add mark')));
+    }
+  }
+
+  Future<void> fetchStudentId(String name) async {
+    final response = await http.get(Uri.parse(studentURL));
+    if (response.statusCode == 200) {
+      final List<dynamic> students = jsonDecode(response.body);
+      final matchedStudent = students.firstWhere(
+        (s) => s['student_name'] == name,
+        orElse: () => null,
+      );
+
+      if (matchedStudent != null) {
+        setState(() {
+          selectedStudentName = name;
+          selectedStudentId = matchedStudent['student_id'];
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +85,7 @@ class AddStudent extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 50,
                   backgroundImage: AssetImage("assets/images/ava.jpg"),
                 ),
@@ -29,27 +93,15 @@ class AddStudent extends StatelessWidget {
 
                 LabelText(text: "Student Name:"),
                 StudentSearchField(
-                  studentNames: [
-                    "Yihong",
-                    "Recycle Monster",
-                    "Mega Knight",
-                    "Terralith",
-                    "Cycloop never die",
-                    "debate",
-                    "lalat king",
-                    "zei bi",
-                    "beimuyu",
-                    "Wen Hui",
-                  ],
-                  onSelected: (selectedName) {
-                    print("Selected student: $selectedName");
+                  onSelected: (String name) async {
+                    await fetchStudentId(name);
                   },
                 ),
 
                 const SizedBox(height: 16),
                 LabelText(text: "Course Code:"),
                 FillInBlank(
-                  text: course.courseCode,
+                  text: widget.course.courseCode,
                   icon: Icons.book,
                   hint: "Course Code",
                   isEnabled: false,
@@ -58,7 +110,7 @@ class AddStudent extends StatelessWidget {
                 const SizedBox(height: 16),
                 LabelText(text: "Course Name:"),
                 FillInBlank(
-                  text: course.courseName,
+                  text: widget.course.courseName,
                   icon: Icons.book,
                   hint: "Course Name",
                   isEnabled: false,
@@ -66,11 +118,16 @@ class AddStudent extends StatelessWidget {
 
                 const SizedBox(height: 16),
                 LabelText(text: "Mark:"),
-                FillInBlank(
-                  text: "Your Mark",
-                  icon: Icons.grade,
-                  hint: "Mark",
-                  isEnabled: true,
+                TextField(
+                  controller: markController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.grade),
+                    hintText: "Enter mark",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -78,13 +135,9 @@ class AddStudent extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create button pressed')),
-          );
-        },
-        label: const Text('Create'),
-        icon: const Icon(Icons.create),
+        onPressed: submitMark,
+        label: const Text('Add Student'),
+        icon: const Icon(Icons.add),
       ),
     );
   }

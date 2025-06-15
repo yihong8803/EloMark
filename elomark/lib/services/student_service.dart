@@ -145,4 +145,31 @@ static Future<ApiResponse<Student>> getStudentDetail() async {
       throw Exception(response.error ?? 'Failed to load student');
     }
   }
+
+  static Future<ApiResponse<List<Student>>> getStudentsByCourse(int courseId) async {
+  ApiResponse<List<Student>> apiResponse = ApiResponse();
+
+  try {
+    final response = await http.get(
+      Uri.parse('$studentURL?course_id=$courseId'),
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        final data = jsonDecode(response.body) as List;
+        apiResponse.data = data.map((e) => Student.fromJson(e)).toList();
+        break;
+
+      default:
+        apiResponse.error = 'Server error: ${response.statusCode}';
+        break;
+    }
+  } catch (e) {
+    apiResponse.error = 'Something went wrong: $e';
+  }
+
+  return apiResponse;
+}
+
+
 }

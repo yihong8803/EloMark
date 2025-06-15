@@ -90,7 +90,7 @@ class StudentDetailCard extends StatelessWidget {
               student.studentName,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            Text(student.studentEmail),
+            Text(student.studentName),
           ],
         ),
       ),

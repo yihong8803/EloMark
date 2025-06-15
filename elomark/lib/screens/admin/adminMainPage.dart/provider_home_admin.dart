@@ -1,7 +1,7 @@
 //Platform connecting cubit and UI
 
 import 'package:elomark/models/course.dart';
-import 'package:elomark/screens/admin/adminMainPage.dart/cubit_home_admin.dart';
+import 'package:elomark/screens/admin/cubits/cubit_home_admin.dart';
 import 'package:elomark/screens/admin/adminMainPage.dart/page_home_admin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,7 +16,7 @@ class RankingPage extends StatelessWidget {
     //Bloc Provider
     return BlocProvider(
       create: (context) => RankingCubit(),
-      child: Ranking(course: course),
+      child: MarkPage(course: course),
     );
   }
 }

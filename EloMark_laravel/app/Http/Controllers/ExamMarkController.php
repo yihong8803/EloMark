@@ -29,19 +29,49 @@ class ExamMarkController extends Controller
         return response()->json($examMark);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $student_id, $course_id)
+{
+    $examMark = ExamMark::where('student_id', $student_id)
+                        ->where('course_id', $course_id)
+                        ->firstOrFail(); // this throws the 404 error you're seeing
+
+    $examMark->mark = $request->input('mark');
+    $examMark->save();
+
+    return response()->json(['success' => true, 'message' => 'Mark updated']);
+}
+
+    public function destroy($student_id, $course_id)
     {
-        $examMark = ExamMark::findOrFail($id);
-        $request->validate([
-            'mark' => 'nullable|integer|min:0|max:100',
+        $mark = ExamMark::where('student_id', $student_id)
+                        ->where('course_id', $course_id)
+                        ->first();
+
+        if (!$mark) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mark not found for this student in the specified course.'
+            ], 404);
+        }
+
+        $mark->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mark deleted successfully.'
         ]);
-        $examMark->update($request->only('mark'));
-        return $examMark;
     }
 
-    public function destroy($id)
+    // ✅ Add this function at the bottom of the controller
+    public function getByCourse($course_id)
     {
-        ExamMark::destroy($id);
-        return response()->json(['message' => 'Exam mark deleted']);
+        $marks = ExamMark::with(['student:student_id,student_name', 'course:course_id,course_name,course_code'])
+                    ->where('course_id', $course_id)
+                    ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $marks
+        ]);
     }
 }

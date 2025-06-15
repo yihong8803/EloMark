@@ -26,11 +26,16 @@ use App\Http\Controllers\StudentController;
     Route::delete('/courses/{id}', [CourseController::class, 'destroy']);
 
     //Mark
-    Route::get('/exam-marks', [ExamMarkController::class, 'index']);
-    Route::post('/exam-marks', [ExamMarkController::class, 'store']);
-    Route::get('/exam-marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'show']);
-Route::put('/exam-marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'update']);
-Route::delete('/exam-marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'destroy']);
+    Route::get('/exam_marks', [ExamMarkController::class, 'index']);
+    Route::post('/exam_marks', [ExamMarkController::class, 'store']);
+    Route::get('/exam_marks/courses/{course_id}', [ExamMarkController::class, 'getByCourse']);
+    Route::get('/exam_marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'show']);
+    Route::put('/exam_marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'update']);
+    Route::delete('/exam_marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'destroy']);
+
+    //Student In Corresponding Course
+    //Useless
+    Route::get('/students/courses/{course_id}', [StudentController::class, 'getStudentsByCourse']);
 
     //Student
     Route::get('/students', [StudentController::class, 'index']);

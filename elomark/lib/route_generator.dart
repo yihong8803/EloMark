@@ -1,5 +1,5 @@
 import 'package:elomark/screens/admin/adminMainPage.dart/provider_home_admin.dart';
-import 'package:elomark/screens/admin/course_select.dart';
+import 'package:elomark/screens/admin/course_select_page.dart';
 import 'package:elomark/screens/login.dart';
 import 'package:flutter/material.dart';
 

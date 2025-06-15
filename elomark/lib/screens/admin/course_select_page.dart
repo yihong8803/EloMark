@@ -91,7 +91,7 @@ class _CourseSelectionPageState extends State<CourseSelectionPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => Ranking(course: course),
+                                        builder: (_) => MarkPage(course: course),
                                       ),
                                     );
                                   },
