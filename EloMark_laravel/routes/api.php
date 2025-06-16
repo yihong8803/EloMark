@@ -31,12 +31,12 @@ use App\Http\Controllers\StudentController;
 
     //Get the mark from all course for a specific student id
     Route::get('/exam_marks/students/{student_id}', [ExamMarkController::class, 'getByStudent']);
-    
+     
     //Get the mark from all student for a specific course
     Route::get('/exam_marks/courses/{course_id}', [ExamMarkController::class, 'getByCourse']);
-    Route::get('/exam_marks/students/{student_id}/course/{course_id}', [ExamMarkController::class, 'show']);
-    Route::put('/exam_marks/students/{student_id}/course/{course_id}', [ExamMarkController::class, 'update']);
-    Route::delete('/exam_marks/students/{student_id}/course/{course_id}', [ExamMarkController::class, 'destroy']);
+    Route::get('/exam_marks/students/{student_id}/courses/{course_id}', [ExamMarkController::class, 'show']);
+    Route::put('/exam_marks/students/{student_id}/courses/{course_id}', [ExamMarkController::class, 'update']);
+    Route::delete('/exam_marks/students/{student_id}/courses/{course_id}', [ExamMarkController::class, 'destroy']);
 
     //Student In Corresponding Course
     //Useless

@@ -43,11 +43,13 @@ class _CourseSelectionPageState extends State<CourseSelectionPage> {
   void _filterCourses(String query) {
     setState(() {
       _searchText = query;
-      _filteredCourses = _allCourses.where((course) {
-        final name = course.courseName.toLowerCase();
-        final code = course.courseCode.toLowerCase();
-        return name.contains(query.toLowerCase()) || code.contains(query.toLowerCase());
-      }).toList();
+      _filteredCourses =
+          _allCourses.where((course) {
+            final name = course.courseName.toLowerCase();
+            final code = course.courseCode.toLowerCase();
+            return name.contains(query.toLowerCase()) ||
+                code.contains(query.toLowerCase());
+          }).toList();
     });
   }
 
@@ -58,54 +60,78 @@ class _CourseSelectionPageState extends State<CourseSelectionPage> {
         title: const Text('Course Selection'),
         backgroundColor: Colors.blue,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
               ? Center(child: Text(_error!))
               : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search by course code or name',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search by course code or name',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        onChanged: _filterCourses,
                       ),
+                      onChanged: _filterCourses,
                     ),
-                    Expanded(
-                      child: _filteredCourses.isEmpty
-                          ? const Center(child: Text("No courses found."))
-                          : ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  Expanded(
+                    child:
+                        _filteredCourses.isEmpty
+                            ? const Center(child: Text("No courses found."))
+                            : ListView.separated(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               itemCount: _filteredCourses.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
+                              separatorBuilder:
+                                  (_, __) => const SizedBox(height: 8),
                               itemBuilder: (context, index) {
                                 final course = _filteredCourses[index];
                                 return InkWell(
-                                  onTap: () {
-                                    Navigator.push(
+                                  onTap: () async {
+                                    final result = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => MarkPage(course: course),
+                                        builder:
+                                            (_) => MarkPage(course: course),
                                       ),
                                     );
+
+                                    if (result == 'refresh') {
+                                      _fetchCourses(); // Refresh after deletion
+                                    }
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 12,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 5,
+                                        ),
+                                      ],
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(course.courseCode, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Text(
+                                          course.courseCode,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                         Expanded(
                                           child: Text(
                                             course.courseName,
@@ -119,24 +145,23 @@ class _CourseSelectionPageState extends State<CourseSelectionPage> {
                                 );
                               },
                             ),
-                    ),
-                  ],
-                ),
-                floatingActionButton: FloatingActionButton(
-  onPressed: () async {
-    final bool? isCourseAdded = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddCoursePage()),
-    );
-    // Reload courses if a new one was added
-    if (isCourseAdded == true) {
-      _fetchCourses();
-    }
-  },
-  backgroundColor: Colors.blue,
-  child: const Icon(Icons.add),
-),
-
+                  ),
+                ],
+              ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final bool? isCourseAdded = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddCoursePage()),
+          );
+          // Reload courses if a new one was added
+          if (isCourseAdded == true) {
+            _fetchCourses();
+          }
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add),
+      ),
       backgroundColor: const Color(0xFFF2F4F8),
     );
   }

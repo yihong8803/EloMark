@@ -24,36 +24,20 @@ class MarkService {
   }
 
   // Get all marks by student ID (StudentMark model)
-  static Future<List<StudentMark>> getMarksByStudent(String studentId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$examMarkURL/students/$studentId'),
-      );
+static Future<StudentMarkResponse?> getMarksByStudent(String studentId) async {
+  try {
+    final response = await http.get(Uri.parse('$examMarkURL/students/$studentId'));
 
-      print('Response body (student): ${response.body}');
-
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-
-        if (decoded is List) {
-          return decoded
-              .map<StudentMark>((json) => StudentMark.fromJson(json))
-              .toList();
-        } else {
-          print('Response is not a list');
-          return [];
-        }
-      } else {
-        print(
-          'Failed to load student marks: ${response.statusCode} - ${response.body}',
-        );
-        return [];
-      }
-    } catch (e) {
-      print('Error in getMarksByStudent: $e');
-      return [];
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      return StudentMarkResponse.fromJson(decoded);
     }
+    return null;
+  } catch (e) {
+    print('Error: $e');
+    return null;
   }
+}
 
   // Get all marks by course ID
   static Future<List<Mark>> getMarksByCourse(int courseId) async {
@@ -115,7 +99,7 @@ class MarkService {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('$examMarkURL/student/$studentId/course/$courseId'),
+        Uri.parse('$examMarkURL/students/$studentId/courses/$courseId'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mark': mark}),
       );
@@ -131,7 +115,7 @@ class MarkService {
   static Future<bool> deleteMark(int studentId, int courseId) async {
     try {
       final response = await http.delete(
-        Uri.parse('$examMarkURL/student/$studentId/course/$courseId'),
+        Uri.parse('$examMarkURL/students/$studentId/courses/$courseId'),
       );
 
       return response.statusCode == 200;

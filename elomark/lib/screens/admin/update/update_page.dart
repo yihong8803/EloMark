@@ -73,7 +73,9 @@ class _UpdatePageState extends State<UpdatePage> {
 
               if (confirm == true) {
                 final response = await http.delete(
-                  Uri.parse('$examMarkURL/student/$studentId/course/$courseId'),
+                  Uri.parse(
+                    '$examMarkURL/students/$studentId/courses/$courseId',
+                  ),
                 );
 
                 if (response.statusCode == 200) {
@@ -146,7 +148,6 @@ class _UpdatePageState extends State<UpdatePage> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                
               ],
             ),
           ),
@@ -226,7 +227,7 @@ class _UpdatePageState extends State<UpdatePage> {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('$examMarkURL/student/$studentId/course/$courseId'),
+        Uri.parse('$examMarkURL/students/$studentId/courses/$courseId'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mark': mark}),
       );

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ExamMark;
 use Illuminate\Http\Request;
+use App\Models\Student;
 
 class ExamMarkController extends Controller
 {
@@ -63,19 +64,22 @@ class ExamMarkController extends Controller
     }
 
     public function getByStudent($student_id)
-    {
-        $marks = ExamMark::with('course')
-            ->where('student_id', $student_id)
-            ->get();
+{
+    $student = Student::find($student_id);
 
-        if ($marks->isEmpty()) {
-            return response()->json([
-                'message' => 'No marks found for this student.'
-            ], 404);
-        }
-
-        return response()->json($marks, 200);
+    if (!$student) {
+        return response()->json(['message' => 'Student not found'], 404);
     }
+
+    $marks = ExamMark::with('course')
+        ->where('student_id', $student_id)
+        ->get();
+
+    return response()->json([
+        'student' => $student,
+        'marks' => $marks,
+    ], 200);
+}
 
     // ✅ Add this function at the bottom of the controller
     public function getByCourse($course_id)
