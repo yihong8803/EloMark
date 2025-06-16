@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elomark/models/studentMark.dart';
 import 'package:http/http.dart' as http;
 import '../models/mark.dart';
 import '../constant.dart';
@@ -18,6 +19,38 @@ class MarkService {
       }
     } catch (e) {
       print('Error in getAllMarks: $e');
+      return [];
+    }
+  }
+
+  // Get all marks by student ID (StudentMark model)
+  static Future<List<StudentMark>> getMarksByStudent(String studentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$examMarkURL/students/$studentId'),
+      );
+
+      print('Response body (student): ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+
+        if (decoded is List) {
+          return decoded
+              .map<StudentMark>((json) => StudentMark.fromJson(json))
+              .toList();
+        } else {
+          print('Response is not a list');
+          return [];
+        }
+      } else {
+        print(
+          'Failed to load student marks: ${response.statusCode} - ${response.body}',
+        );
+        return [];
+      }
+    } catch (e) {
+      print('Error in getMarksByStudent: $e');
       return [];
     }
   }

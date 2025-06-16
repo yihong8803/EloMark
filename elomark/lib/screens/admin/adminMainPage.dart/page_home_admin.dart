@@ -77,38 +77,80 @@ class _MarkPageState extends State<MarkPage> {
             borderRadius: BorderRadius.circular(15),
           ),
           child: Column(
-            children: [
-              // Export CSV Button
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () async {
-                    final marks = markCubit.state;
+             children: [
+                Align(
+  alignment: Alignment.centerLeft,
+  child: TextButton.icon(
+    onPressed: () async {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Delete Course"),
+          content: const Text("Are you sure you want to delete this course and all related marks?"),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("Delete"),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        ),
+      );
 
-                    if (marks.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No marks to export')),
-                      );
-                      return;
-                    }
+      if (confirm == true) {
+        // TODO: Add your delete logic here (e.g., call API or delete locally)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Course deleted successfully')),
+        );
 
-                    List<List<String>> csvData = [
-                      ['Student Name', 'Course Name', 'Mark'],
-                      ...marks.map(
-                        (mark) => [
-                          mark.student.studentName,
-                          mark.course.courseName,
-                          mark.mark.toString(),
-                        ],
-                      ),
-                    ];
+        Navigator.pop(context); // Go back after deletion
+      }
+    },
+    icon: const Icon(Icons.delete, color: Colors.red),
+    label: const Text(
+      'Delete Course',
+      style: TextStyle(color: Colors.red),
+    ),
+  ),
+),
 
-                    await exportCSV(context, csvData);
-                  },
-                  icon: const Icon(Icons.share),
-                  label: const Text('Export All as CSV'),
-                ),
-              ),
+
+
+            //   // Export CSV Button
+            //   Align(
+            //     alignment: Alignment.centerLeft,
+            //     child: TextButton.icon(
+            //       onPressed: () async {
+            //         final marks = markCubit.state;
+
+            //         if (marks.isEmpty) {
+            //           ScaffoldMessenger.of(context).showSnackBar(
+            //             const SnackBar(content: Text('No marks to export')),
+            //           );
+            //           return;
+            //         }
+
+            //         List<List<String>> csvData = [
+            //           ['Student Name', 'Course Name', 'Mark'],
+            //           ...marks.map(
+            //             (mark) => [
+            //               mark.student.studentName,
+            //               mark.course.courseName,
+            //               mark.mark.toString(),
+            //             ],
+            //           ),
+            //         ];
+
+            //         await exportCSV(context, csvData);
+            //       },
+            //       icon: const Icon(Icons.share),
+            //       label: const Text('Export All as CSV'),
+            //     ),
+            //   ),
 
               // List of marks
               Expanded(

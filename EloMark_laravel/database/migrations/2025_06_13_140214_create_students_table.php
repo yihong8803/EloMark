@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements('student_id'); // changed from id()
             $table->string('student_name');       // renamed from 'name'
             $table->string('student_email')->unique(); // renamed from 'email'
+            $table->string('password');
             $table->string('image')->nullable();  // optional
             $table->timestamps();
         });

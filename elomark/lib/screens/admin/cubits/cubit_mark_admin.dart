@@ -5,10 +5,12 @@ import 'package:elomark/services/mark_service.dart';
 class MarkCubit extends Cubit<List<Mark>> {
   MarkCubit() : super([]);
 
- Future<void> loadMarksByCourse(int courseId) async {
-  final marks = await MarkService.getMarksByCourse(courseId);
-  emit(marks);
-}
+  Future<void> loadMarksByCourse(int courseId) async {
+    final marks = await MarkService.getMarksByCourse(courseId);
+    emit(marks);
+  }
+
+
 
   void clearMarks() {
     emit([]);

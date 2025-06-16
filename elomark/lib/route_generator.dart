@@ -1,6 +1,6 @@
 import 'package:elomark/screens/admin/adminMainPage.dart/provider_home_admin.dart';
 import 'package:elomark/screens/admin/course_select_page.dart';
-import 'package:elomark/screens/login.dart';
+import 'package:elomark/screens/login2.dart';
 import 'package:flutter/material.dart';
 
 class RouteGenerator {
@@ -9,9 +9,10 @@ class RouteGenerator {
 
     switch (settings.name) {
       case '/':
-        // Redirect to course selection on app start
-        final courseList = args as List<Map<String, String>>? ?? [];
-        return MaterialPageRoute(builder: (_) => CourseSelectionPage());
+        return MaterialPageRoute(builder: (_) => HomePage());
+      // // Redirect to course selection on app start
+      // final courseList = args as List<Map<String, String>>? ?? [];
+      // return MaterialPageRoute(builder: (_) => CourseSelectionPage());
 
       case '/course-selection':
         final courseList = args as List<Map<String, String>>;

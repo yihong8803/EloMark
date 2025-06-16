@@ -9,7 +9,7 @@ use App\Http\Controllers\StudentController;
 
 // //Public Routes
 // Route::post('/register', [AuthController::class, 'register']);
-// Route::post('/login', [AuthController::class, 'login']);
+
 
 // // Protected Routes
 // Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -28,16 +28,22 @@ use App\Http\Controllers\StudentController;
     //Mark
     Route::get('/exam_marks', [ExamMarkController::class, 'index']);
     Route::post('/exam_marks', [ExamMarkController::class, 'store']);
+
+    //Get the mark from all course for a specific student id
+    Route::get('/exam_marks/students/{student_id}', [ExamMarkController::class, 'getByStudent']);
+    
+    //Get the mark from all student for a specific course
     Route::get('/exam_marks/courses/{course_id}', [ExamMarkController::class, 'getByCourse']);
-    Route::get('/exam_marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'show']);
-    Route::put('/exam_marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'update']);
-    Route::delete('/exam_marks/student/{student_id}/course/{course_id}', [ExamMarkController::class, 'destroy']);
+    Route::get('/exam_marks/students/{student_id}/course/{course_id}', [ExamMarkController::class, 'show']);
+    Route::put('/exam_marks/students/{student_id}/course/{course_id}', [ExamMarkController::class, 'update']);
+    Route::delete('/exam_marks/students/{student_id}/course/{course_id}', [ExamMarkController::class, 'destroy']);
 
     //Student In Corresponding Course
     //Useless
     Route::get('/students/courses/{course_id}', [StudentController::class, 'getStudentsByCourse']);
 
     //Student
+    Route::post('/students/login', [StudentController::class, 'login']);
     Route::get('/students', [StudentController::class, 'index']);
     Route::post('/students', [StudentController::class, 'store']);
     Route::post('/students/{id}/image', [StudentController::class, 'updateImage']);

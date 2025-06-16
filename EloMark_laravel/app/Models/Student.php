@@ -18,7 +18,8 @@ class Student extends Model
     'student_id',
     'student_name',
     'student_email',
-    'photo',
+    'image',
+    'password',
 ];
 
     public function examMarks()

@@ -62,6 +62,21 @@ class ExamMarkController extends Controller
         ]);
     }
 
+    public function getByStudent($student_id)
+    {
+        $marks = ExamMark::with('course')
+            ->where('student_id', $student_id)
+            ->get();
+
+        if ($marks->isEmpty()) {
+            return response()->json([
+                'message' => 'No marks found for this student.'
+            ], 404);
+        }
+
+        return response()->json($marks, 200);
+    }
+
     // ✅ Add this function at the bottom of the controller
     public function getByCourse($course_id)
     {

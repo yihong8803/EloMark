@@ -7,39 +7,50 @@ import '../models/student.dart';
 class StudentService {
   // Login Function
   static Future<ApiResponse<Student>> login(
-    String email,
+    String studentId,
     String password,
   ) async {
     ApiResponse<Student> apiResponse = ApiResponse();
+
+    print('Requesting URL: $loginURL');
 
     try {
       final response = await http.post(
         Uri.parse(loginURL),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({'student_id': studentId, 'password': password}),
       );
+      print('HTTP status: ${response.statusCode}');
+      print('Body: ${response.body}');
 
       switch (response.statusCode) {
         case 200:
           final data = jsonDecode(response.body);
-          final student = Student.fromJson(data);
+          final student = Student.fromJson(data['student']);
           apiResponse.data = student;
+          print('1');
           break;
 
         case 422:
           final errors = jsonDecode(response.body)['errors'];
           apiResponse.error = errors[errors.keys.elementAt(0)][0];
+          print('2');
           break;
 
         case 403:
           apiResponse.error = jsonDecode(response.body)['message'];
+          print('3');
           break;
 
         default:
-          apiResponse.error = serverError;
+          final data = jsonDecode(response.body);
+          apiResponse.error =
+              data['message'] ?? "Unexpected error: ${response.statusCode}";
+          print('4');
           break;
       }
     } catch (e) {
+      print('5');
       apiResponse.error = somethingWentWrong;
     }
 
@@ -100,35 +111,39 @@ class StudentService {
   }
 
   // Get Student Detail
-static Future<ApiResponse<Student>> getStudentDetail() async {
-  ApiResponse<Student> apiResponse = ApiResponse();
-  print('Calling backend...');
-  print('Requesting URL: $studentURL');
-  try {
-    final response = await http.get(Uri.parse(studentURL)).timeout(Duration(seconds: 100));
-    print('HTTP status: ${response.statusCode}');
-    print('Body: ${response.body}');
+  static Future<ApiResponse<Student>> getStudentDetail() async {
+    ApiResponse<Student> apiResponse = ApiResponse();
+    print('Calling backend...');
+    print('Requesting URL: $studentURL');
+    try {
+      final response = await http
+          .get(Uri.parse(studentURL))
+          .timeout(Duration(seconds: 100));
+      print('HTTP status: ${response.statusCode}');
+      print('Body: ${response.body}');
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      print('Decoded data: $data');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Decoded data: $data');
 
-      if (data is List && data.isNotEmpty) {
-        apiResponse.data = Student.fromJson(data[0]);
+        if (data is List && data.isNotEmpty) {
+          apiResponse.data = Student.fromJson(data[0]);
+        } else {
+          apiResponse.error = 'No student data found';
+        }
       } else {
-        apiResponse.error = 'No student data found';
+        apiResponse.error = 'Server error: ${response.statusCode}';
       }
-    } else {
-      apiResponse.error = 'Server error: ${response.statusCode}';
+    } catch (e) {
+      print('Exception caught: $e');
+      apiResponse.error = 'Exception: $e';
     }
-  } catch (e) {
-    print('Exception caught: $e');
-    apiResponse.error = 'Exception: $e';
-  }
 
-  print('Returning apiResponse: error=${apiResponse.error}, data=${apiResponse.data}');
-  return apiResponse;
-}
+    print(
+      'Returning apiResponse: error=${apiResponse.error}, data=${apiResponse.data}',
+    );
+    return apiResponse;
+  }
 
   Future<Student> loadStudent() async {
     print('Loading student...');
@@ -146,30 +161,30 @@ static Future<ApiResponse<Student>> getStudentDetail() async {
     }
   }
 
-  static Future<ApiResponse<List<Student>>> getStudentsByCourse(int courseId) async {
-  ApiResponse<List<Student>> apiResponse = ApiResponse();
+  static Future<ApiResponse<List<Student>>> getStudentsByCourse(
+    int courseId,
+  ) async {
+    ApiResponse<List<Student>> apiResponse = ApiResponse();
 
-  try {
-    final response = await http.get(
-      Uri.parse('$studentURL?course_id=$courseId'),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('$studentURL?course_id=$courseId'),
+      );
 
-    switch (response.statusCode) {
-      case 200:
-        final data = jsonDecode(response.body) as List;
-        apiResponse.data = data.map((e) => Student.fromJson(e)).toList();
-        break;
+      switch (response.statusCode) {
+        case 200:
+          final data = jsonDecode(response.body) as List;
+          apiResponse.data = data.map((e) => Student.fromJson(e)).toList();
+          break;
 
-      default:
-        apiResponse.error = 'Server error: ${response.statusCode}';
-        break;
+        default:
+          apiResponse.error = 'Server error: ${response.statusCode}';
+          break;
+      }
+    } catch (e) {
+      apiResponse.error = 'Something went wrong: $e';
     }
-  } catch (e) {
-    apiResponse.error = 'Something went wrong: $e';
+
+    return apiResponse;
   }
-
-  return apiResponse;
-}
-
-
 }

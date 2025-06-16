@@ -22,6 +22,7 @@ class StudentController extends Controller
             'student_name' => 'required|string',
             'student_email' => 'required|email|unique:students',
             'image' => 'nullable|string',
+            'password' => 'required|string|min:6',
         ]);
 
         $imageUrl = $this->saveImage($request->image ?? null, 'student_images');
@@ -31,6 +32,7 @@ class StudentController extends Controller
             'student_name' => $request->student_name,
             'student_email' => $request->student_email,
             'image' => $imageUrl,
+            'password' => $request->password,
         ]);
 
         return response()->json($student, 201);
@@ -38,7 +40,7 @@ class StudentController extends Controller
 
     public function show($id)
     {
-        return Student::select('student_id', 'student_name', 'student_email', 'image')->findOrFail($id);
+        return Student::select('student_id', 'student_name', 'student_email', 'image','password')->findOrFail($id);
     }
 
     public function update(Request $request, $id)
@@ -95,5 +97,32 @@ class StudentController extends Controller
             'image_url' => $imageUrl,
         ]);
     }
+    
+    //Login
+    public function login(Request $request)
+    {
+        $request->validate([
+            'student_id' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
+        $student = Student::where('student_id', $request->student_id)
+            ->where('password', $request->password) // ⚠️ plain-text match
+            ->first();
+
+        if (!$student) {
+            return response()->json(['message' => 'Invalid student ID or password'], 401);
+        }
+
+        return response()->json([
+            'message' => 'Login successful',
+            'student' => [
+                'student_id' => $student->student_id,
+                'student_name' => $student->student_name,
+                'student_email' => $student->student_email,
+                'image' => $student->image,
+                'password' => $student->password,
+            ]
+        ]);
+    }
 }
